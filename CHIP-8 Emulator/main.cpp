@@ -106,7 +106,7 @@ private:
 	chip8 interpreter;
 	std::string rom_title;
 	fm::framebuffer* fm;
-	float cycle_delay = 0.2f;
+	float cycle_delay = 0.9f;
 	float current_time = cycle_delay;
 	uint16_t pcs[4];
 	uint16_t first_available = 0;
@@ -169,11 +169,14 @@ private:
 
 		text_pos.y -= 10;
 		draw_text("Instructions: ", text_pos.x, text_pos.y, 1, text_color);
-		for (uint32_t i = 0; i < 4; i++)
+		for (uint32_t i = 0; i < first_available; i++)
 		{
 			text_pos.y -= 10;
 			draw_text("0x" + hex(pcs[i], 4) + " " + interpreter.get_instruction_name(pcs[i]), text_pos.x, text_pos.y, 1, text_color);
 		}
+		for (uint32_t i = 0; i < 4 - first_available; i++)
+			text_pos.y -= 10;
+
 		draw_quad(fm::color(1.0f, 1.0f, 1.0f), text_pos.x - 2, text_pos.y - 2, 120, 40);
 
 	}
