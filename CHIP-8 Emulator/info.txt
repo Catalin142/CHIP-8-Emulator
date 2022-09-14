@@ -1,0 +1,177 @@
+CHIP-8 Emulator using C++
+https://austinmorlan.com/posts/chip8_emulator
+http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
+
+An emulator needs to read machine code instructions from a file and replicate the behaviour.
+
+Opcode: CPU instruction. It encodes an operation and relevant data into a number
+	    that a machine can read
+
+CHIP-8 Components:
+- 16 8-Bit registers
+	-> Loads data from memory into the registers, does operations on them and write 
+	   data back to memory
+	-> from V0 to VF and they can hold values between 0x00 and 0xFF (0 - 255)
+	-> VF holds informations about the result of operations
+
+- 4K bites of memory (4096 bytes of memory)
+	-> Memory is segmented into 3 sections:
+		-> 0x000 - 0x1FF - Reserved for the CHIP-8 Interpreter, but the Interpreter is running
+						   outside of this memory.
+		-> 0x050 - 0x0A0 - Storage space for the 16 bulit-in characters (0 to F)
+		-> 0x200 - 0xFFF - Instructions or other stuff
+
+- 16 Bit index registers (I)
+	-> Used to point at locations in memory
+
+- 16 Bit program counter (PC)
+	-> Points at the next instruction in memory
+
+- 16-level stack (LIFO)
+	-> Keep track of the order of execution
+
+- 8 Bit stack pointer
+	-> Points at the most recent value in the stack
+
+- 8 Bit delay timer
+	-> Timer that decrements at 60 Hz if it's not zero
+
+- 8 Bit sound timer
+	-> Creates sound and decrements at 60 Hz is it's not zero
+
+- 16 Input Keys
+	->  Keypad       Keyboard
+	   +-+-+-+-+    +-+-+-+-+
+	   |1|2|3|C|    |1|2|3|4|
+	   +-+-+-+-+    +-+-+-+-+
+	   |4|5|6|D|    |Q|W|E|R|
+	   +-+-+-+-+ => +-+-+-+-+
+	   |7|8|9|E|    |A|S|D|F|
+	   +-+-+-+-+    +-+-+-+-+
+	   |A|0|B|F|    |Z|X|C|V|
+	   +-+-+-+-+    +-+-+-+-+
+
+- 64x32 display
+	-> Each pixel is either on or off (1 or 0)
+		-> on = white (0xFFFFFFFF)
+		-> off = black (0x00000000)
+	-> 0 ^ 0 = 0
+	-> 0 ^ 1 = 1
+	-> 1 ^ 0 = 1
+	-> 1 ^ 1 = 0
+
+
+Chip-8 instructions
+  00E0 - CLS 
+	-> Clear the display
+
+  00EE - RET
+	-> Return from a subroutine
+
+  1nnn - JP addr
+	-> Jumps to location nnn
+
+  2nnn - CALL addr
+	-> Call subroutine at nnn
+
+  3xkk - SE Vx, byte
+	-> Skip next instruction if Vx == kk
+
+  4xkk - SNE Vx, byte
+	-> Skip next instruction if Vx != kk
+
+  5xy0 - SE Vx, Vy
+	-> Skip next instruction if Vx == Vy
+
+  6xkk - LD Vx, byte
+	-> Set Vx = kk
+
+  7xkk - ADD Vx, byte
+	-> Set Vx = Vk + kk
+
+  8xy0 - LD Vx, Vy
+	-> Set Vx = Vy
+
+  8xy1 - OR Vx, Vy
+	-> Set Vx = Vx | Vy
+
+  8xy2 - AND Vx, Vy
+	-> Set Vx = Vx & Vy
+
+  8xy3 - XOR Vx, Vy
+	-> Set Vx = Vx ^ Vy
+
+  8xy4 - ADD Vx, Vy
+	-> Set Vx = Vx + Vy
+	-> Set VF = carry ( 1 if the result is grater than 255 )
+
+  8xy5 - SUB Vx, Vy
+	-> Set Vx = Vx - Vy
+	-> set VF = !borrow ( 1 if Vx > Vy )
+
+  8xy6 - SHR Vx {, Vy}
+	-> Set Vx = Vx >> 1
+	-> If the least-significant bit of Vx is 1, VK = 1
+
+  8xy7 - SUBN Vx, Vy
+	-> Set Vx = Vy - Vx
+	-> Set VF = !borrow
+	-> If Vy > Vx => VF = 1
+
+  8xyE - SHL Vx {, Vy}
+	-> Set Vx = Vx << 1
+	-> If the most-significant bit of Vx is 1, VK = 1
+
+  9xy0 - SNE Vx, Vy
+	-> Skip next instruction if Vx != Vy
+
+  Annn - LD I, addr
+	-> Set I to nnn
+
+  Bnnn - JP V0, addr
+	-> Jump to location nnn + V0
+
+  Cxkk - RND Vx, byte
+	-> Set Vx = random byte & kk
+
+  Dxyn - DRW Vx, Vy, nibble
+	-> Display n-byte sprite starting at memory
+	   location I at (Vx, Vy)
+	-> Set VF = collision
+
+  Ex9E - SKP Vx
+	-> Skip next instruction if key with the 
+	   value of Vx is pressed
+
+  ExA1 - SKNP Vx
+	-> Skip next instruction if key with the 
+	   value of Vx is not pressed
+
+  Fx07 - LD Vx, DT
+	-> Set Vx = delay timer value
+
+  Fx0A - LD Vx, K
+	-> Wait for a key press, store the value of the
+	   key in Vx
+
+  Fx15 - LD DT, Vx
+	-> Set delay timer = Vx
+
+  Fx18 - LD ST, Vx
+	-> Set sount timer = Vx
+
+  Fx1E - ADD I, Vx
+	-> set I = I + Vx
+
+  Fx29 - LD F, Vx
+	-> set I = location of sprite for digit Vx
+
+  Fx33 - LD B, Vx
+	-> Store BCD representation of Vx in memory location
+	   I, I + 1 and I + 2
+
+  Fx55 - LD [I], Vx
+	-> Store registers V0 -> Vx in memory starting at location I
+
+  Fx65 - LD Vx, [I]
+	-> Read registers V0 through Vx from memory starting at location I.
