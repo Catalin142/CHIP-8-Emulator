@@ -56,12 +56,15 @@ struct chip8
 	void reset();
 	void load_rom(const std::string& filepath);
 	void execute_instuction(uint16_t opcode);
+	std::string get_instruction_name(uint16_t opcode);
 
 	void cycle();
+
 
 private:
 	void load_font();
 	void load_instructions();
+	void load_ins_name();
 
 	// Chip-8 instructions
 	void op_00E0();
@@ -101,4 +104,5 @@ private:
 
 private:
 	instruction_table instructions;
+	std::unordered_map<uint16_t, std::string> ins_names;
 };

@@ -172,7 +172,7 @@ private:
 		for (uint32_t i = 0; i < 4; i++)
 		{
 			text_pos.y -= 10;
-			draw_text("0x" + hex(pcs[i], 4), text_pos.x, text_pos.y, 1, text_color);
+			draw_text("0x" + hex(pcs[i], 4) + " " + interpreter.get_instruction_name(pcs[i]), text_pos.x, text_pos.y, 1, text_color);
 		}
 		draw_quad(fm::color(1.0f, 1.0f, 1.0f), text_pos.x - 2, text_pos.y - 2, 120, 40);
 

@@ -10,7 +10,9 @@ void chip8::initialize()
 	pc = MEMORY_START_ADRESS;
 	load_font();
 	load_instructions();
+	load_ins_name();
 }
+
 void chip8::reset()
 {
 	pc = MEMORY_START_ADRESS;
@@ -435,6 +437,44 @@ void chip8::load_instructions()
 	instructions[0xF065] = &chip8::op_Fx65;
 }
 
+void chip8::load_ins_name()
+{
+	ins_names[0x00E0] = "CLS";
+	ins_names[0x00EE] = "RET";
+	ins_names[0x1000] = "JP addr";
+	ins_names[0x2000] = "CALL addr";
+	ins_names[0x3000] = "SE Vx, byte";
+	ins_names[0x4000] = "SNE Vx, byte";
+	ins_names[0x5000] = "SE Vx, Vy";
+	ins_names[0x6000] = "LD Vx, byte";
+	ins_names[0x7000] = "ADD Vx, byte";
+	ins_names[0x8000] = "LD Vx, Vy";
+	ins_names[0x8001] = "OR Vx, Vy";
+	ins_names[0x8002] = "AND Vx, Vy";
+	ins_names[0x8003] = "XOR Vx, Vy";
+	ins_names[0x8004] = "ADD Vx, Vy";
+	ins_names[0x8005] = "SUB Vx, Vy";
+	ins_names[0x8006] = "SHR Vx [, Vy]";
+	ins_names[0x8007] = "SUBN Vx, Vy";
+	ins_names[0x800E] = "SHL Vx [, Vy]";
+	ins_names[0x9000] = "SNE Vx, Vy";
+	ins_names[0xA000] = "LD I, addr";
+	ins_names[0xB000] = "JP V0, addr";
+	ins_names[0xC000] = "RND Vx, byte";
+	ins_names[0xD000] = "DRW Vx, Vy, nibble";
+	ins_names[0xE00E] = "SKP Vx";
+	ins_names[0xE001] = "SKNP Vx";
+	ins_names[0xF007] = "LD Vx, DT";
+	ins_names[0xF00A] = "LD Vx, K";
+	ins_names[0xF015] = "LD DT, Vx";
+	ins_names[0xF018] = "LD ST, Vx";
+	ins_names[0xF01E] = "ADD I, Vx";
+	ins_names[0xF029] = "LD F, Vx";
+	ins_names[0xF033] = "LD B, Vx";
+	ins_names[0xF055] = "LD [I], Vx";
+	ins_names[0xF065] = "LD Vx, [I]";
+}
+
 void chip8::execute_instuction(uint16_t opcode)
 {
 	uint16_t code = (0xF0FF & opcode);
@@ -449,4 +489,20 @@ void chip8::execute_instuction(uint16_t opcode)
 	}
 
 	(this->*(instructions[code]))();
+}
+
+std::string chip8::get_instruction_name(uint16_t opcode)
+{
+	uint16_t code = (0xF0FF & opcode);
+	if (instructions.find(code) == instructions.end())
+		code = (code & 0xFF0F);
+	if (instructions.find(code) == instructions.end())
+		code = (code & 0xFFF0);
+	if (instructions.find(code) == instructions.end())
+	{
+		std::cout << "instruction doesnt exist: " << code << "\n";
+		return "";
+	}
+
+	return ins_names[code];
 }
