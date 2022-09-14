@@ -3,6 +3,9 @@ Chip8 Emulator fully developed in C++
 ![ss1](Screenshots/ss1.png)
 ![ss2](Screenshots/ss2.png)
 
+# Guide
+Press left and right arrows to change the game
+
 # Building
 Run GenerateProject.bat
 
