@@ -106,7 +106,7 @@ private:
 	chip8 interpreter;
 	std::string rom_title;
 	fm::framebuffer* fm;
-	float cycle_delay = 0.9f;
+	float cycle_delay = 0.2f;
 	float current_time = cycle_delay;
 	uint16_t pcs[4];
 	uint16_t first_available = 0;

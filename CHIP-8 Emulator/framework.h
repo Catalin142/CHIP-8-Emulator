@@ -52,7 +52,7 @@ namespace fm
 		inline T magnitude() { return sqrt(x * x + y * y + z * z); }
 		inline v3 normalize() { T inv = 1.0f / magnitude(); return v3(x * inv, y * inv, z * inv); }
 		inline T dot(const v3& r) { return x * r.x + y * r.y + z * r.z; }
-		inline T cross(const v3& r) { return y * r.z - z * r.y, z * r.x - x * r.z, x * r.y - y * r.x; }
+		inline T cross(const v3& r) { return y * r.z - z * r.y, z* r.x - x * r.z, x* r.y - y * r.x; }
 		inline v3<T> operator* (T value) { return { x * value, y * value, z * value }; }
 		inline v3<T> operator/ (T value) { return { x / value, y / value, z / value }; }
 		inline v3<T> operator+ (T value) { return { x + value, y + value, z + value }; }
@@ -112,7 +112,7 @@ namespace fm
 		friend struct application;
 
 	public:
-		framebuffer(uint32_t w, uint32_t h) : width(w), height(h) 
+		framebuffer(uint32_t w, uint32_t h) : width(w), height(h)
 		{
 			buffer = new uint32_t[width * height];
 		}
@@ -279,7 +279,7 @@ namespace fm
 		// s refers to pixel size not actual size
 		void draw_framebuffer(framebuffer* fm, uint32_t x, uint32_t y, uint32_t s = 1);
 
-		void draw_text(const std::string& text, uint32_t x, uint32_t y, 
+		void draw_text(const std::string& text, uint32_t x, uint32_t y,
 			uint32_t s, fm::color c);
 
 		texture* load_texture(const std::string& filepath);
@@ -417,15 +417,15 @@ namespace fm
 
 	void application::set_pixel(uint32_t x, uint32_t y, color c)
 	{
-		uint32_t pos = y * pwindow->width + x;
-		if (x >= 0 && x < pwindow->width && y >= 0 && y < pwindow->height)
+		uint32_t pos = y * pgraphics_context->buffer_width + x;
+		if (x >= 0 && x < pgraphics_context->buffer_width && y >= 0 && y < pgraphics_context->buffer_height)
 			*(pgraphics_context->memory_buffer + pos) = c.hex;
 	}
 
 	void application::set_pixel(uint32_t x, uint32_t y, unsigned long c)
 	{
-		uint32_t pos = y * pwindow->width + x;
-		if (x >= 0 && x < pwindow->width && y >= 0 && y < pwindow->height)
+		uint32_t pos = y * pgraphics_context->buffer_width + x;
+		if (x >= 0 && x < pgraphics_context->buffer_width && y >= 0 && y < pgraphics_context->buffer_height)
 			*(pgraphics_context->memory_buffer + pos) = c;
 	}
 
@@ -433,8 +433,8 @@ namespace fm
 	{
 		v2<float> dt(x1 - x0, y1 - y0);
 		uint32_t length = dt.magnitude();
-		length = clamp(length, 0u, 
-			(uint32_t)sqrt(pgraphics_context->buffer_width * pgraphics_context->buffer_width + 
+		length = clamp(length, 0u,
+			(uint32_t)sqrt(pgraphics_context->buffer_width * pgraphics_context->buffer_width +
 				pgraphics_context->buffer_height * pgraphics_context->buffer_height));
 		v2<float> addFactor = dt.normalize() * t;
 
@@ -459,7 +459,7 @@ namespace fm
 		uint32_t* pixel;
 		for (uint32_t y = start_y; y < end_y; y++)
 		{
-			pixel = (uint32_t*)pgraphics_context->memory_buffer + 
+			pixel = (uint32_t*)pgraphics_context->memory_buffer +
 				start_x + y * pgraphics_context->buffer_width;
 			for (uint32_t x = start_x; x < end_x; x++)
 			{
@@ -472,7 +472,7 @@ namespace fm
 	{
 		draw_line(c, x, y, x + w, y, t);
 		draw_line(c, x, y, x, y + h, t);
-			
+
 		// one pixel was left out
 		draw_line(c, x, y + h, x + w + 1, y + h, t);
 		draw_line(c, x + w, y, x + w, y + h, t);
@@ -763,7 +763,7 @@ namespace fm
 		if (pgraphics_context->memory_buffer)
 			VirtualFree(pgraphics_context->memory_buffer, 0, MEM_RELEASE);
 
-		pgraphics_context->memory_buffer = (uint32_t*)VirtualAlloc(0, 
+		pgraphics_context->memory_buffer = (uint32_t*)VirtualAlloc(0,
 			pgraphics_context->buffer_width * pgraphics_context->buffer_height * sizeof(uint32_t), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
 		pgraphics_context->bm_info.bmiHeader.biWidth = pgraphics_context->buffer_width;
@@ -781,8 +781,8 @@ namespace fm
 
 	void application::present()
 	{
-		StretchDIBits(pwindow->device_context, 
-			0, 0, pwindow->width, pwindow->height, 
+		StretchDIBits(pwindow->device_context,
+			0, 0, pwindow->width, pwindow->height,
 			0, 0, pgraphics_context->buffer_width, pgraphics_context->buffer_height,
 			pgraphics_context->memory_buffer, &pgraphics_context->bm_info, DIB_RGB_COLORS, SRCCOPY);
 	}
